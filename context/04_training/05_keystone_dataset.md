@@ -108,12 +108,17 @@ print(f"kept {len(rows)} episodes at threshold {THRESHOLD}")
 # or symlink/copy them into a single filtered LeRobot dataset root.
 ```
 
-Expected episode counts after filtering (based on 24-trial mini-keystone at the **halved-DR envelope** — see [`05_keystone_playbook.md`](../07_team/05_keystone_playbook.md) for the DR settings):
-- `total ≥ 85`: ~17–25 % of raw → **255–375 episodes** out of 1500
-- `total ≥ 70`: ~30–40 % → **450–600 episodes**
-- `total ≥ 50`: ~70 % → ~1050
+Expected episode counts after filtering. Numbers below are **measured from the 2026-05-14 mini-keystone v2** at the halved-DR envelope (24 trials, mean total 79.78, see [`06_dr_verification.md`](../07_team/06_dr_verification.md) for the full breakdown):
 
-Diffusion Policy wants ≥ 500 demos; ACT works with 200+. Filter at 70 hits both. Filter at 85 is borderline for Diffusion Policy.
+| Threshold | v2 measured rate | Forecast at 1500 trials |
+|---|---|---|
+| `total ≥ 85` | 54 % (13/24) | **~810 episodes** |
+| `total ≥ 70` | 58 % (14/24) | **~870 episodes** |
+| `total ≥ 50` | 92 % (22/24) | **~1380 episodes** |
+
+The v2 score distribution is **bimodal** — trials either insert cleanly (tier_3=75, total ≥ 85) or fail visibly (total < 50). Only ~4 % of trials live in the 70–85 band, so threshold ≥ 70 and ≥ 85 are nearly equivalent in selectivity but ≥ 70 keeps an extra ~60 demos.
+
+**Default for first pass: `total ≥ 70`.** Diffusion Policy wants ≥ 500 demos; ACT works with 200+. Both clear comfortably at this threshold. Drop to ≥ 50 only if the full keystone underperforms its mini-keystone forecast.
 
 ## Building a merged LeRobot dataset from the filtered subset
 

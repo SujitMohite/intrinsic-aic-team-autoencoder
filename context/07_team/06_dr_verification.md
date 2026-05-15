@@ -58,37 +58,39 @@ Forecast at this rate over 1500 trials: ~315 demos clear the 85-filter, ~495 cle
 
 ---
 
-## v2 — halved DR (TO RUN; result template below)
+## v2 — halved DR (2026-05-14, mini-keystone @ `/tmp/aic_v2_mini_keystone`, ran on Laptop 2 / RTX 4070)
 
-The first v2 attempt on this desktop was corrupted by a rosbag-cleaner bug (`v2_entrypoint.sh` used `find -mmin` on directory mtime which doesn't update during bag growth; live bags got deleted, tier_2 collapsed to 4.17). The cleaner is now fixed (keeps the 2 newest bag dirs by `ls -1dt` order). **Re-run on the faster laptop.**
-
-After the run completes on Laptop 2, **fill the table below** with the same metrics from v1 so we can A/B compare:
+Cleaner fix verified: 24 trials clean, no bag corruption. Container exited rc=0, scoring backfilled into all 24 manifest rows.
 
 ```
-24 trials, ___ valid
+24 trials, 24 valid (100% conformance)
 
-Mean total:    ___       (compare to v1's 62.93)
-Min / Max:     ___ / ___
-Mean tier_2:   ___       (compare to v1's 16.57)
-Mean tier_3:   ___       (compare to v1's 45.36)
-tier_3 = 75:   __ / 24   (compare to v1's 5)
+Mean total:    79.78     (v1: 62.93, +27%)
+Min / Max:     41.32 / 96.74
+Mean tier_2:   19.03     (v1: 16.57, +2.5)
+Mean tier_3:   59.75     (v1: 45.36, +14.4)
+tier_3 = 75:   13 / 24   (v1: 5; full-insertion rate 54% vs 21%)
 
 Filter survival rates:
-  total ≥ 85:  __ / 24  (___%)
-  total ≥ 70:  __ / 24  (___%)
-  total ≥ 50:  __ / 24  (___%)
+  total ≥ 85:  13 / 24  (54%)   (v1: 21%)
+  total ≥ 70:  14 / 24  (58%)   (v1: 33%)   ← headline metric
+  total ≥ 50:  22 / 24  (92%)   (v1: 71%)
 
-Per-target breakdown (focus on whether nic3 recovers):
-  sfp nic0:  n=__  mean=___   _ successes
-  sfp nic1:  n=__  mean=___   _ successes
-  sfp nic2:  n=__  mean=___   _ successes
-  sfp nic3:  n=__  mean=___   _ successes   (was 0 in v1)
-  sfp nic4:  n=__  mean=___   _ successes
-  sc sc_port_0: n=__  mean=___   _ successes
-  sc sc_port_1: n=__  mean=___   _ successes
+Per-target breakdown:
+  sfp nic0:  n=2  mean=84.0   1 success
+  sfp nic1:  n=2  mean=96.2   2 successes
+  sfp nic2:  n=6  mean=83.5   4 successes
+  sfp nic3:  n=4  mean=69.5   2 successes   ★ recovered (v1 was 0/4)
+  sfp nic4:  n=1  mean=96.3   1 success
+  sc sc_port_0: n=5  mean=78.1   2 successes
+  sc sc_port_1: n=4  mean=72.2   1 success
 
-Throughput: __ ep/h   (compare to v1's ~37 ep/h)
+Throughput: 106 ep/h   (v1: ~37 ep/h, ~2.9× faster)
 ```
+
+**Decision tree result:** filter-at-70 = 58% ≥ 50% **AND** mean total = 79.78 ≥ 75 → **LAUNCH keystone with halved DR**. nic3 not structurally broken; DR was the cause.
+
+Forecast at this v2 rate over 1500 trials: ~870 demos clear the 70-filter (vs ~495 forecast under v1). Headroom for the IL student-teacher gap.
 
 ---
 

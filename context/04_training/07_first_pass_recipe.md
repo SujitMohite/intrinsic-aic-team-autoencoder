@@ -19,10 +19,12 @@ Do NOT try both in the first pass. One full loop end-to-end first, then iterate.
 
 ## Data prep — filtered LeRobot dataset
 
+> **DON'T SKIP THIS.** Training on the raw keystone teaches the policy to fail at insertion. ~⅔ of FastCheatCode trials are open-loop misses (tier_3 partial credit). The mandatory filter drops them. Full rationale + numbers in [`05_keystone_dataset.md`](./05_keystone_dataset.md#critical--filter-before-training).
+
 Before training, build a filtered subset from the raw keystone:
 
 ```bash
-THRESHOLD=70   # or 85 for higher quality, see 05_keystone_dataset.md
+THRESHOLD=70   # default; raise to 85 for ~60 fewer demos at top quality (see below)
 FILTERED=/data/aic_v2/keystone_filtered_t${THRESHOLD}
 mkdir -p "$FILTERED"
 
@@ -34,7 +36,15 @@ mkdir -p "$FILTERED"
 # training run.
 ```
 
-Expected size after filtering at 70: **450–600 episodes**. Below 300, drop the threshold to 50 and accept lower mean quality.
+**Threshold cheat sheet** (forecast from 2026-05-14 mini-keystone v2, mean total 79.78, bimodal distribution):
+
+| THRESHOLD | Forecast episodes / 1500 | Use when |
+|---|---|---|
+| `70` *(default)* | ~870 | First pass; both ACT and Diffusion Policy clear their demo floors |
+| `85` | ~810 | Want the cleanest demos; only ~60 fewer than 70 because the distribution is bimodal |
+| `50` | ~1380 | Fallback if full keystone underperforms mini and 70-filter yields < 300 |
+
+If the filtered count falls below **300 episodes**, the dataset is too small for Diffusion Policy. Drop the threshold to 50 and accept lower mean quality, or collect more trials before training.
 
 ## Hyperparams (ACT, copy-paste defaults)
 
