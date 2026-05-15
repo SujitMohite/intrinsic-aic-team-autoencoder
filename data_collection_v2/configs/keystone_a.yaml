@@ -1,0 +1,54 @@
+# Keystone slice A — seeds 1..500, run on Machine A (this machine, slower).
+# Paired with keystone_b.yaml (seeds 501..1500). Split is 1:2 by trial count,
+# matching the expected 1:2 throughput ratio (A ~42 ep/h, B ~85 ep/h). Both
+# halves should finish at roughly the same time (~12 h).
+#
+# Output layout (on Machine A's local disk):
+#   /data/aic_v2/keystone_a/
+#     manifest.jsonl                  (500 rows when complete)
+#     lerobot_v2/data/chunk-000/      (500 parquets)
+#     sessions/, engine_results/, logs/
+
+output_dir: /data/aic_v2/keystone_a
+target_total_episodes: 500
+seed_start: 1
+
+policy: data_collection_v2.policy.FastCheatCode
+per_trial_time_limit_s: 40
+
+plug_distribution:
+  sfp: 0.60
+  sc: 0.40
+
+nic_card_index_distribution:
+  uniform_over: [0, 1, 2, 3, 4]
+
+sc_port_distribution:
+  uniform_over: [0, 1]
+
+nic_rail_translation_range_m: [-0.022, 0.022]
+nic_card_yaw_offset_range_rad: [-0.08, 0.08]    # halved from doc-spec ±0.17 — CheatCode is open-loop, fragile
+sc_rail_translation_range_m: [-0.06, 0.055]
+
+task_board_x_range: [0.13, 0.18]
+task_board_y_range: [-0.22, -0.18]
+task_board_z_range: [1.12, 1.16]
+task_board_yaw_range: [2.84, 3.44]    # π±0.3 (was ±0.5)
+
+grasp_offset_xyz_sigma_m: [0.002, 0.002, 0.002]
+grasp_offset_rpy_sigma_rad: [0.02, 0.02, 0.02]  # halved from doc-spec 0.04
+
+gazebo_gui: false
+launch_rviz: false
+disable_gi: true
+camera_downsample_hw: [256, 256]
+
+quality_gate_every_n_episodes: 50
+min_success_rate: 0.85
+min_per_nic_demos: 15   # 500 trials × 0.6 sfp / 5 nics ≈ 60 per nic; 15 is a safety floor
+min_per_plug_demos: 80  # 500 × 0.4 sc ≈ 200; 500 × 0.6 sfp ≈ 300; 80 floors below smallest split
+
+image_jpg_quality: 85
+fps: 20
+
+aic_eval_container_name: aic_eval

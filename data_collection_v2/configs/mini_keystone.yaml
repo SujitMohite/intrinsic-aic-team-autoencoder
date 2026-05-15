@@ -1,0 +1,55 @@
+# 24-trial mini-keystone — VERIFICATION pass before committing to the full
+# 1500-trial run. Uses the same DR envelope as keystone_a/b so the score
+# distribution we see here matches what the full run will produce. ~30 min wall.
+#
+# Pass criteria before launching full keystone:
+#   - mean total ≥ 75 across the 24 trials
+#   - tier_1 == 1 on every trial (model conformance)
+#   - score distribution: most trials > 70, a few in the 30-50 band (the π yaw)
+#
+# If those hold, the full keystone_a/b configs will collect leaderboard-grade data.
+
+output_dir: /tmp/aic_v2_mini_keystone
+target_total_episodes: 24
+seed_start: 1
+
+policy: data_collection_v2.policy.FastCheatCode
+per_trial_time_limit_s: 40
+
+plug_distribution:
+  sfp: 0.60
+  sc: 0.40
+
+nic_card_index_distribution:
+  uniform_over: [0, 1, 2, 3, 4]
+
+sc_port_distribution:
+  uniform_over: [0, 1]
+
+# === Randomization envelope (same as keystone_1500.yaml updated 2026-05-14) ===
+nic_rail_translation_range_m: [-0.022, 0.022]   # physical limit; CheatCode handles
+nic_card_yaw_offset_range_rad: [-0.08, 0.08]    # halved from doc-spec ±0.17 — open-loop CheatCode skids at wider angles
+sc_rail_translation_range_m: [-0.06, 0.055]
+
+task_board_x_range: [0.13, 0.18]
+task_board_y_range: [-0.22, -0.18]
+task_board_z_range: [1.12, 1.16]
+task_board_yaw_range: [2.84, 3.44]    # π±0.3 (was ±0.5); narrows the degenerate π band's relative weight
+
+grasp_offset_xyz_sigma_m: [0.002, 0.002, 0.002]
+grasp_offset_rpy_sigma_rad: [0.02, 0.02, 0.02]  # halved from doc-spec 0.04 — cable approach angle now matches port aperture
+
+gazebo_gui: false
+launch_rviz: false
+disable_gi: true
+camera_downsample_hw: [256, 256]
+
+quality_gate_every_n_episodes: 24
+min_success_rate: 0.85
+min_per_nic_demos: 1
+min_per_plug_demos: 5
+
+image_jpg_quality: 85
+fps: 20
+
+aic_eval_container_name: aic_eval

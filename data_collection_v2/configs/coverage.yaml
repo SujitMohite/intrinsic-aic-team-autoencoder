@@ -1,0 +1,45 @@
+# 12-trial coverage test — one trial per (plug × target × port) combo.
+# Trials are hand-enumerated by data_collection_v2.pipeline.coverage; the
+# distribution / range fields below are present only because SweepConfig
+# requires them — coverage trials ignore them and use zero DR + canonical
+# task-board pose from aic_engine/config/sample_config.yaml:67-72.
+
+output_dir: /tmp/aic_v2_coverage
+target_total_episodes: 12
+seed_start: 1001
+
+policy: data_collection_v2.policy.FastCheatCode
+per_trial_time_limit_s: 40
+
+plug_distribution:
+  sfp: 0.6
+  sc: 0.4
+nic_card_index_distribution:
+  uniform_over: [0, 1, 2, 3, 4]
+sc_port_distribution:
+  uniform_over: [0, 1]
+
+nic_rail_translation_range_m: [0.0, 0.0]
+nic_card_yaw_offset_range_rad: [0.0, 0.0]
+sc_rail_translation_range_m: [0.0, 0.0]
+task_board_x_range: [0.15, 0.15]
+task_board_y_range: [-0.20, -0.20]
+task_board_z_range: [1.14, 1.14]
+task_board_yaw_range: [3.1415, 3.1415]
+grasp_offset_xyz_sigma_m: [0.0, 0.0, 0.0]
+grasp_offset_rpy_sigma_rad: [0.0, 0.0, 0.0]
+
+gazebo_gui: false
+launch_rviz: false
+disable_gi: true
+camera_downsample_hw: [256, 256]
+
+quality_gate_every_n_episodes: 12
+min_success_rate: 1.0
+min_per_nic_demos: 1
+min_per_plug_demos: 1
+
+image_jpg_quality: 85
+fps: 20
+
+aic_eval_container_name: aic_eval

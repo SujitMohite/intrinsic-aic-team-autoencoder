@@ -1,0 +1,19 @@
+# Optional overlay on top of aic_eval that bakes in the Python deps the v2
+# recorder needs (pyarrow, opencv-python-headless). v2_entrypoint.sh installs
+# these on first run via `pip install --user` when missing, so this overlay is
+# only worth building if you want to avoid the ~30-60s first-run install cost
+# (e.g. for the 24h campaign where every minute counts on cold starts).
+#
+# Build:
+#   docker build -t aic_eval_v2 -f data_collection_v2/container/Dockerfile.overlay .
+# Or via distrobox after building:
+#   distrobox create -r --nvidia -i aic_eval_v2 aic_eval
+
+FROM ghcr.io/intrinsic-dev/aic/aic_eval:latest
+
+# Install pyarrow + headless opencv into the image's system Python. --no-cache-dir
+# keeps the image small; --break-system-packages because the AIC image's Python
+# is PEP-668-marked.
+RUN python3 -m pip install --no-cache-dir --break-system-packages \
+        pyarrow \
+        opencv-python-headless
